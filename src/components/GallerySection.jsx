@@ -1,21 +1,12 @@
 import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
+import ImageGallery from './ImageGallery';
 
-const GallerySection = ({ imageURLs}) => (
+const GallerySection = ({ imageURLs, onImageClick }) => (
   <Box mt={3}>
     <Typography variant="h6">Gallery</Typography>
     <Paper elevation={3} style={{ padding: 16 }}>
-      <Grid container spacing={2}>
-        {imageURLs.map((url, index) => (
-          <Grid item xs={6} sm={4} md={3} key={index}>
-            <img
-              src={url}
-              alt={`Gallery image ${index + 1}`}
-              style={{ width: '100%', height: 'auto' }}
-            />
-          </Grid>
-        ))}
-      </Grid>
+      <ImageGallery images={imageURLs} onImageClick={onImageClick} />
     </Paper>
   </Box>
 );

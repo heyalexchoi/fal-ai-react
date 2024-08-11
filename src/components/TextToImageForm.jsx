@@ -115,8 +115,8 @@ const TextToImageForm = ({ apiKey, onResult }) => {
         },
       });
 
-      const resultImages = result.images.map(image => image.url);
-      onResult(resultImages);
+      console.log('Result:', result);
+      onResult(result);
       setSuccessMessage('Images generated successfully!');
     } catch (error) {
       let message = error.message || 'Unknown error';
@@ -156,11 +156,12 @@ const TextToImageForm = ({ apiKey, onResult }) => {
         fullWidth
         margin="normal"
       >
-        <MenuItem value="landscape_4_3">Landscape 4:3</MenuItem>
-        <MenuItem value="square">Square</MenuItem>
         <MenuItem value="square_hd">Square HD</MenuItem>
-        <MenuItem value="portrait_4_3">Portrait 4:3</MenuItem>
+        <MenuItem value="square">Square</MenuItem>
+        <MenuItem value="landscape_4_3">Landscape 4:3</MenuItem>
         <MenuItem value="landscape_16_9">Landscape 16:9</MenuItem>
+        <MenuItem value="portrait_4_3">Portrait 4:3</MenuItem>
+        <MenuItem value="portrait_16_9">Landscape 16:9</MenuItem>
       </Select>
       <SliderInput
         label={`Num Inference Steps: ${inferenceSteps}`}

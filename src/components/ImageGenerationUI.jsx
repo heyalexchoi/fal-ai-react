@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Tabs,
@@ -12,21 +12,39 @@ import ImageModal from './ImageModal';
 import GallerySection from './GallerySection';
 import APIKeyInput from './APIKeyInput';
 
+const SAVED_GALLERY_IMAGES_KEY = 'savedGalleryImages';
+
 const ImageGenerationUI = () => {
   const [tabValue, setTabValue] = useState(0);
   const [resultImages, setResultImages] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [apiKey, setApiKey] = useState('');
+
+  useEffect(() => {
+    const savedImages = localStorage.getItem(SAVED_GALLERY_IMAGES_KEY);
+    if (savedImages) {
+      setGalleryImages(JSON.parse(savedImages));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (galleryImages.length < 1) {
+      return 
+    }
+    localStorage.setItem(SAVED_GALLERY_IMAGES_KEY, JSON.stringify(galleryImages));
+  }, [galleryImages]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
   const onResult = (result) => {
-
-    setResultImages(result);
+    const resultImages = result.images.map(image => image.url);
+    setResultImages(resultImages);
+    setGalleryImages(images => [...resultImages, ...images]);
   };
 
   const handleImageClick = (imageSrc) => {
@@ -65,7 +83,10 @@ const ImageGenerationUI = () => {
         imageSrc={selectedImage} 
       />
 
-      <GallerySection imageURLs={resultImages} />
+      <GallerySection 
+        imageURLs={galleryImages} 
+        onImageClick={handleImageClick}
+      />
     </Container>
   );
 };
