@@ -42,9 +42,12 @@ const ImageGenerationUI = () => {
   };
 
   const onResult = (result) => {
-    const resultImages = result.images.map(image => image.url);
-    setResultImages(resultImages);
-    setGalleryImages(images => [...resultImages, ...images]);
+    for (const image of result.images) { 
+      image.seed = result.seed;
+      image.prompt = result.prompt;
+    }
+    setResultImages(result.images);
+    setGalleryImages(prevImages => [...result.images, ...prevImages]);
   };
 
   const handleImageClick = (imageSrc) => {
@@ -80,11 +83,11 @@ const ImageGenerationUI = () => {
       <ImageModal 
         open={modalOpen} 
         onClose={() => setModalOpen(false)} 
-        imageSrc={selectedImage} 
+        image={selectedImage} 
       />
 
       <GallerySection 
-        imageURLs={galleryImages} 
+        images={galleryImages} 
         onImageClick={handleImageClick}
       />
     </Container>
