@@ -161,7 +161,7 @@ const TextToImageForm = ({ apiKey, onResult }) => {
         <MenuItem value="landscape_4_3">Landscape 4:3</MenuItem>
         <MenuItem value="landscape_16_9">Landscape 16:9</MenuItem>
         <MenuItem value="portrait_4_3">Portrait 4:3</MenuItem>
-        <MenuItem value="portrait_16_9">Landscape 16:9</MenuItem>
+        <MenuItem value="portrait_16_9">Portrait 16:9</MenuItem>
       </Select>
       <SliderInput
         label={`Num Inference Steps: ${inferenceSteps}`}

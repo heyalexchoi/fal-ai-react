@@ -7,37 +7,52 @@ const ImageModal = ({ open, onClose, image }) => {
     <Modal 
       open={open} 
       onClose={onClose}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
     >
       <Box sx={{ 
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         outline: 'none',
+        height: '100%',
+        width: '100%',
+        padding: 2,
+        overflow: 'auto',
       }}>
         <IconButton
-          sx={{ position: 'absolute', right: 8, top: 8 }}
+          sx={{ alignSelf: 'flex-end', marginBottom: 2 }}
           onClick={onClose}
         >
           <CloseIcon />
         </IconButton>
-        <img src={image.url} alt="Selected" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+        }}>
+          <img 
+            src={image.url} 
+            alt="Selected" 
+            style={{ 
+              maxWidth: '100%', 
+              maxHeight: '100%', 
+              objectFit: 'contain' 
+            }} 
+          />
+        </Box>
         <Box
           sx={{
+            width: '100%',
             paddingY: 4,
             paddingX: 8,
             backgroundColor: (theme) => theme.palette.background.paper,
           }}
         >
           <Typography variant="h6">Prompt:</Typography>
-          <Typography variant="body">{image.prompt}</Typography>
-          <Typography variant="h6">Seed:</Typography>
-          <Typography variant="body">{image.seed}</Typography>
+          <Typography variant="body1">{image.prompt}</Typography>
+          <Typography variant="h6" sx={{ mt: 2 }}>Seed:</Typography>
+          <Typography variant="body1">{image.seed}</Typography>
         </Box>
       </Box>
     </Modal>
