@@ -45,6 +45,8 @@ const ImageGenerationUI = () => {
     for (const image of result.images) { 
       image.seed = result.seed;
       image.prompt = result.prompt;
+      image.model = result.model;
+      image.guidance_scale = result.guidance_scale;
     }
     setResultImages(result.images);
     setGalleryImages(prevImages => [...result.images, ...prevImages]);

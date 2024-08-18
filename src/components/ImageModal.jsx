@@ -53,6 +53,10 @@ const ImageModal = ({ open, onClose, image }) => {
           <Typography variant="body1">{image.prompt}</Typography>
           <Typography variant="h6" sx={{ mt: 2 }}>Seed:</Typography>
           <Typography variant="body1">{image.seed}</Typography>
+          <Typography variant="h6" sx={{ mt: 2 }}>Guidance:</Typography>
+          <Typography variant="body1">{image.guidance_scale}</Typography>
+          <Typography variant="h6" sx={{ mt: 2 }}>Model:</Typography>
+          <Typography variant="body1">{image.model}</Typography>
         </Box>
       </Box>
     </Modal>

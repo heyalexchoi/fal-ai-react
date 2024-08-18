@@ -3,17 +3,20 @@ import * as fal from "@fal-ai/serverless-client";
 import { Box, Typography, Select, MenuItem, TextField, Button } from '@mui/material';
 import SliderInput from './SliderInput';
 import ModelSelector from './ModelSelector';
+import ObjectListBuilder from './ObjectListBuilder';
 
 const T2I_FORM_STATE_KEY = 'textToImageFormState';
 
 const TextToImageForm = ({ apiKey, onResult }) => {
   const [model, setModel] = useState('');
+  const [loras, setLoras] = useState([]);
   const [prompt, setPrompt] = useState('');
   const [imageSize, setImageSize] = useState('square');
   const [inferenceSteps, setInferenceSteps] = useState(28);
   const [guidanceScale, setGuidanceScale] = useState(3.5);
   const [safetyTolerance, setSafetyTolerance] = useState(6);
   const [imageCount, setImageCount] = useState(1);
+  const [repeats, setRepeats] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -27,12 +30,14 @@ const TextToImageForm = ({ apiKey, onResult }) => {
       const parsedState = JSON.parse(savedState);
 
       setModel(parsedState.model || '');
+      setLoras(parsedState.loras || []);
       setPrompt(parsedState.prompt || '');
       setImageSize(parsedState.imageSize || 'square');
       setInferenceSteps(parsedState.inferenceSteps || 28);
       setGuidanceScale(parsedState.guidanceScale || 3.5);
       setSafetyTolerance(parsedState.safetyTolerance || 6);
       setImageCount(parsedState.imageCount || 1);
+      setRepeats(parsedState.repeats || 1);
       setNegativePrompt(parsedState.negativePrompt || '');
     }
   }, []);
@@ -43,12 +48,14 @@ const TextToImageForm = ({ apiKey, onResult }) => {
     }
     const stateToSave = {
       model,
+      loras,
       prompt,
       imageSize,
       inferenceSteps,
       guidanceScale,
       safetyTolerance,
       imageCount,
+      repeats,
       negativePrompt
     };
     // Remove empty fields from stateToSave
@@ -69,6 +76,10 @@ const TextToImageForm = ({ apiKey, onResult }) => {
       return;
     }
 
+    if (loras.length > 0 && !model.endsWith('general')) {
+      setStatusMessage('Loras will not be used on non-dev models.');
+    }
+
     fal.config({
       credentials: apiKey,
     });
@@ -85,7 +96,11 @@ const TextToImageForm = ({ apiKey, onResult }) => {
         num_images: parseInt(imageCount) || 1
       };
 
-      if (model.endsWith('dev')) {
+      if (model.endsWith('general')) {
+        input.loras = loras;
+      }
+
+      if (model.endsWith('dev') || model.endsWith('realism') || model.endsWith('general')) {
         input.guidance_scale = parseFloat(guidanceScale);
         input.enable_safety_checker = false;
       } else if (model.endsWith('pro')) {
@@ -95,28 +110,51 @@ const TextToImageForm = ({ apiKey, onResult }) => {
         input.enable_safety_checker = false;
       }
 
-      const result = await fal.subscribe(model, {
-        input,
-        logs: true,
-        onQueueUpdate: (update) => {
+      let results = [];
+      let _seed = parseInt(seed);
 
-          if (update.status === "IN_PROGRESS") {
+      console.log('input:', input);
 
-            if (update.logs.length > 0) {
+      for (let i = 0; i < repeats; i++) {
+        input.seed = _seed;
 
-              setStatusMessage(update.logs[update.logs.length - 1].message);
+        const result = fal.subscribe(model, {
+          input,
+          logs: true,
+          onQueueUpdate: (update) => {
+  
+            if (update.status === "IN_PROGRESS") {
+  
+              if (update.logs.length > 0) {
+  
+                setStatusMessage(update.logs[update.logs.length - 1].message);
+              }
+            } else if (update.status === "IN_QUEUE") {
+              setStatusMessage('In Queue');
+            } else {
+  
+              setStatusMessage('');
             }
-          } else if (update.status === "IN_QUEUE") {
-            setStatusMessage('In Queue');
-          } else {
+          },
+        });
+        results.push(result);
+        _seed += input.num_images;
+      }
 
-            setStatusMessage('');
-          }
-        },
-      });
+      const resolvedResults = await Promise.all(results);
+      const combinedResults = resolvedResults.reduce((acc, result) => {
+        return {
+          images: [...acc.images, ...result.images],
+          seed: acc.seed || result.seed,
+          prompt: acc.prompt || result.prompt,
+        };
+      }, { images: [], seed: null, prompt: null });
 
-      console.log('Result:', result);
-      onResult(result);
+      combinedResults.model = model;
+      combinedResults.guidance_scale = input.guidance_scale;
+
+      console.log('combinedResults:', combinedResults);
+      onResult(combinedResults);
       setSuccessMessage('Images generated successfully!');
     } catch (error) {
       let message = error.message || 'Unknown error';
@@ -133,13 +171,18 @@ const TextToImageForm = ({ apiKey, onResult }) => {
     }
   };
 
-
-
   return (
     <Box>
       <ModelSelector 
         model={model}
         setModel={setModel}
+      />
+      <ObjectListBuilder
+        value={loras}
+        setValue={setLoras}
+        valueKey="path"
+        label="Loras"
+        placeholder="Path to Lora"
       />
       <TextField
         label="Prompt"
@@ -194,12 +237,21 @@ const TextToImageForm = ({ apiKey, onResult }) => {
         step={1}
         marks
       />
+      <SliderInput
+        label={`Number of Repeats: ${repeats}`}
+        value={repeats}
+        onChange={(value) => setRepeats(value)}
+        min={1}
+        max={10}
+        step={1}
+        marks
+      />
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <TextField
           type="number"
           label="Seed"
           value={seed}
-          onChange={(e) => setSeed(e.target.value)}
+          onChange={(e) => setSeed(parseInt(e.target.value))}
           sx={{ flexGrow: 1, mr: 1 }}
         />
         <Button

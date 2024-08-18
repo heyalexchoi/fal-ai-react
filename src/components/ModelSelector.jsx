@@ -14,9 +14,10 @@ const ModelSelector = ({
         fullWidth
         margin="normal"
       >
-        <MenuItem value="fal-ai/flux/schnell">Flux.1 [schnell]</MenuItem>
-        <MenuItem value="fal-ai/flux/dev">Flux.1 [dev]</MenuItem>
+        <MenuItem value="fal-ai/flux-general">Flux.1 GENERAL [dev]</MenuItem>
         <MenuItem value="fal-ai/flux-pro">Flux Pro</MenuItem>
+        <MenuItem value="fal-ai/flux/schnell">Flux.1 [schnell]</MenuItem>
+        <MenuItem value="fal-ai/flux-realism">Flux Realism</MenuItem>
       </Select>
     </>
   )
